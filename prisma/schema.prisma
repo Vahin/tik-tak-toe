@@ -12,3 +12,8 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Game {
+  id   String @id @default(cuid())
+  name String
+}
