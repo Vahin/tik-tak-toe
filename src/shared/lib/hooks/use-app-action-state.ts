@@ -1,6 +1,6 @@
 import { useActionState as useActionStateReact } from "react";
 
-export function useActionState<State, InitialState>(
+export function useAppActionState<State, InitialState>(
   action: (state: Awaited<State>) => State | Promise<State>,
   initialState: InitialState,
   permalink?: string,
@@ -9,7 +9,7 @@ export function useActionState<State, InitialState>(
   dispatch: () => void,
   isPending: boolean,
 ];
-export function useActionState<State, InitialState, Payload>(
+export function useAppActionState<State, InitialState, Payload>(
   action: (state: Awaited<State>, payload: Payload) => State | Promise<State>,
   initialState: InitialState,
   permalink?: string,
@@ -18,7 +18,7 @@ export function useActionState<State, InitialState, Payload>(
   dispatch: (payload: Payload) => void,
   isPending: boolean,
 ];
-export function useActionState(
+export function useAppActionState(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

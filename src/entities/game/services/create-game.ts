@@ -5,14 +5,9 @@ import { GameEntity, PlayerEntity } from "../domain";
 import { gameRepository } from "../repositories/game";
 import cuid from "cuid";
 
-type CreateGameErrorType = Left<string>;
-type CreateGameSuccessType = Right<GameEntity>;
-
-type CreateGameType = CreateGameErrorType | CreateGameSuccessType;
-
 export const createGame = async (
   user: PlayerEntity,
-): Promise<CreateGameType> => {
+): Promise<Left<string> | Right<GameEntity>> => {
   const playerGames = await gameRepository.getGamesList({
     players: { some: { id: user.id } },
     status: "idle",
@@ -23,13 +18,14 @@ export const createGame = async (
       (game) => game.status === "idle" && game.creator.id === user.id,
     )
   ) {
-    return left("can-create-only-one-game");
+    return left("can-create-only-one-game" as const);
   }
 
   const createdGame = await gameRepository.createGame({
     id: cuid(),
     status: "idle",
     creator: user,
+    field: Array(9).fill(null),
   });
 
   return right(createdGame);

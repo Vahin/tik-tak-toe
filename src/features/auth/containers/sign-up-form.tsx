@@ -7,6 +7,7 @@ import { AuthFormLink } from "../ui/auth-form-link";
 import { AuthError } from "../ui/auth-error";
 import { signUpAction } from "../actions/sign-up";
 import { useActionState } from "react";
+import { routes } from "@/kernel/routes";
 
 export const SignUpForm = () => {
   const [formState, action, isPending] = useActionState(signUpAction, {});
@@ -23,7 +24,7 @@ export const SignUpForm = () => {
       link={
         <AuthFormLink
           text="Already have an account?"
-          href="/sign-in"
+          href={routes.signIn()}
           linkText="Sign In"
         />
       }

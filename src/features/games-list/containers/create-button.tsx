@@ -2,31 +2,23 @@
 
 import { Button } from "@/shared/ui/button";
 import { createGameAction } from "../actions/create-game-action";
-import { useActionState } from "@/shared/lib/react";
 import { matchEither, right } from "@/shared/lib/either";
-import { useTransition } from "react";
+
+import { useServerActionState } from "@/shared/lib/hooks/use-server-action-state";
 
 export const CreateButton = () => {
-  const [data, dispatch, isPending] = useActionState(
+  const { state, dispatch, isPending } = useServerActionState(
     createGameAction,
     right(undefined),
   );
 
-  const [isTransitionPending, startTransition] = useTransition();
-
-  const handleClick = () => {
-    startTransition(async () => {
-      dispatch();
-    });
-  };
-
   return (
     <div className="flex flex-col gap-1">
-      <Button disabled={isPending || isTransitionPending} onClick={handleClick}>
+      <Button disabled={isPending} onClick={dispatch}>
         Создайте игру
       </Button>
       {/* TODO: Вызывать toast для показа ошибки пользователю. */}
-      {matchEither(data, {
+      {matchEither(state, {
         right: () => null,
         left: (e) => {
           return {

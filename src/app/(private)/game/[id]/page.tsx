@@ -1,3 +1,5 @@
+import { Game } from "@/features/game/server";
+
 type GamePageProps = {
   params: Promise<{
     id: string;
@@ -6,7 +8,12 @@ type GamePageProps = {
 
 const GamePage = async ({ params }: GamePageProps) => {
   const id = (await params).id;
-  return <div> Game:{id}</div>;
+
+  return (
+    <main className="flex flex-col grow pt-24 w-full max-w-[400px] mx-auto">
+      <Game gameId={id} />
+    </main>
+  );
 };
 
 export default GamePage;
