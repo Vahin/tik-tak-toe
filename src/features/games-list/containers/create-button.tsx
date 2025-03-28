@@ -3,7 +3,6 @@
 import { Button } from "@/shared/ui/button";
 import { createGameAction } from "../actions/create-game-action";
 import { matchEither, right } from "@/shared/lib/either";
-
 import { useServerActionState } from "@/shared/lib/hooks/use-server-action-state";
 
 export const CreateButton = () => {
@@ -14,7 +13,7 @@ export const CreateButton = () => {
 
   return (
     <div className="flex flex-col gap-1">
-      <Button disabled={isPending} onClick={dispatch}>
+      <Button disabled={isPending} onClick={async () => dispatch()}>
         Создайте игру
       </Button>
       {/* TODO: Вызывать toast для показа ошибки пользователю. */}

@@ -1,32 +1,34 @@
-"use client";
-
 import { GameId } from "@/kernel/ids";
-import { GameLayout } from "../ui/game-layout";
-import { GamePlayers } from "../ui/game-players";
-import { GameStatus } from "../ui/game-status";
-import { GameField } from "../ui/game-field";
-import { useGame } from "../model/use-game";
+import { GameClient } from "./game-client";
+import { getCurrentUser } from "@/entities/user/server";
+import { getGameById, startGame } from "@/entities/game/server";
+import { gameEventsService } from "../services/game-events";
 
 type GameProps = {
   gameId: GameId;
 };
 
-export const Game = (props: GameProps) => {
+export const Game = async (props: GameProps) => {
   const { gameId } = props;
 
-  const { game, isPending } = useGame(gameId);
+  const user = await getCurrentUser();
 
-  if (!game || isPending) {
-    return <GameLayout status="Загрузка" />;
+  if (user.type === "left") {
+    throw new Error("User not found");
   }
 
-  console.log(game);
+  let game = await getGameById(gameId);
 
-  return (
-    <GameLayout
-      players={<GamePlayers game={game} />}
-      status={<GameStatus game={game} />}
-      field={<GameField game={game} />}
-    />
-  );
+  if (game.type === "left") {
+    throw new Error("Game doen't exist");
+  }
+
+  const startGameResult = await startGame(gameId, user.value);
+
+  if (startGameResult.type === "right") {
+    game = startGameResult;
+    gameEventsService.emit(startGameResult.value);
+  }
+
+  return <GameClient defaultGame={game.value} />;
 };

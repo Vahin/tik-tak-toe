@@ -1,14 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-async function main() {
-  await prisma.user.create({
-    data: {
-      login: "user-1",
-      passwordHash: "dwadwadaw",
-      rating: 1000,
-    },
-  });
-}
+async function main() {}
 main()
   .then(async () => {
     await prisma.$disconnect();

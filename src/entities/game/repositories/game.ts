@@ -5,10 +5,12 @@ import {
   GameInProgressEntity,
   GameOverDrawEntity,
   GameOverEntity,
+  PlayerEntity,
 } from "../domain";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { removePassword } from "@/shared/lib/remove-password";
+import { GameId } from "@/kernel/ids";
 
 type GamesWithPlayersAndWinner = Prisma.GameGetPayload<{
   include: {
@@ -113,4 +115,27 @@ const createGame = async (game: GameIdleEntity): Promise<GameEntity> => {
   return dbGameToGameEntity(createdGame);
 };
 
-export const gameRepository = { getGame, getGamesList, createGame };
+const startGame = async (
+  gameId: GameId,
+  player: PlayerEntity,
+): Promise<GameEntity> => {
+  return dbGameToGameEntity(
+    await prisma.game.update({
+      where: { id: gameId },
+      data: {
+        players: {
+          connect: {
+            id: player.id,
+          },
+        },
+        status: "inProgress",
+      },
+      include: {
+        players: true,
+        winner: true,
+      },
+    }),
+  );
+};
+
+export const gameRepository = { getGame, getGamesList, createGame, startGame };

@@ -1,4 +1,5 @@
 export { getCurrentSymbol } from "./domain";
+export { startGame } from "./services/start-game";
 export { getGame } from "./services/get-game";
 export { getGameById } from "./services/get-game-by-id";
 export { createGame } from "./services/create-game";
