@@ -12,7 +12,7 @@ export const createGameAction = async () => {
     return user;
   }
 
-  const gameResult = await createGame(user.value);
+  const gameResult = await createGame({ ...user.value, order: 0 });
 
   if (gameResult.type === "right") {
     redirect(routes.game(gameResult.value.id));

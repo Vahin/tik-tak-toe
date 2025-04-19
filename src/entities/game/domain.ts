@@ -39,6 +39,7 @@ export type PlayerEntity = {
   id: GameId;
   login: string;
   rating: number;
+  order?: number;
 };
 
 export type Field = Cell[];
