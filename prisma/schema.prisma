@@ -16,7 +16,7 @@ datasource db {
 model Game {
   id         String     @id @default(cuid())
   status     GameStatus
-  players    User[]     @relation("games")
+  players    GamePlayer[]     
   winner     User?      @relation(fields: [winnerId], references: [id])
   winnerId   String?
   field      Json?
@@ -31,11 +31,20 @@ enum GameStatus {
 }
 
 model User {
-  id           String @id @default(uuid())
-  login        String
-  rating       Int
-  passwordHash String
-  salt         String
-  games        Game[] @relation("games")
-  winningGames Game[]
+  id            String        @id @default(cuid())
+  login         String
+  rating        Int
+  passwordHash  String
+  salt          String
+  winningGames  Game[]
+  gamePlayers   GamePlayer[]  
+}
+
+model GamePlayer {
+  id        String    @id @default(cuid())
+  game      Game      @relation(fields: [gameId], references: [id])
+  gameId    String  
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  order     Int       @default(autoincrement())
 }

@@ -5,24 +5,33 @@ import {
   GameInProgressEntity,
   GameOverDrawEntity,
   GameOverEntity,
-  PlayerEntity,
 } from "../domain";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { removePassword } from "@/shared/lib/remove-password";
 import { GameId } from "@/kernel/ids";
+import { PlayerDTO } from "../model/player-dto";
 
 type GamesWithPlayersAndWinner = Prisma.GameGetPayload<{
   include: {
     winner: true;
-    players: true;
+    players: {
+      include: {
+        user: true;
+      };
+    };
   };
 }>;
 
 const fieldSchema = z.array(z.union([z.string(), z.null()]));
 
 const dbGameToGameEntity = (game: GamesWithPlayersAndWinner): GameEntity => {
-  const players = game.players.map(removePassword);
+  const players = game.players.map((p) => {
+    const player = removePassword(p.user);
+    const order = p.order;
+
+    return { ...player, order };
+  });
 
   switch (game.status) {
     case "idle": {
@@ -75,7 +84,13 @@ const getGame = async (
 ): Promise<GameEntity | null> => {
   const game = await prisma.game.findFirst({
     where,
-    include: { players: true, winner: true },
+    include: {
+      players: {
+        include: { user: true },
+        orderBy: { order: "asc" },
+      },
+      winner: true,
+    },
   });
 
   if (!game) return null;
@@ -90,7 +105,12 @@ const getGamesList = async (
     where,
     include: {
       winner: true,
-      players: true,
+      players: {
+        include: {
+          user: true,
+        },
+        orderBy: { order: "asc" },
+      },
     },
   });
 
@@ -103,11 +123,21 @@ const createGame = async (game: GameIdleEntity): Promise<GameEntity> => {
       status: game.status,
       field: Array(9).fill(null),
       players: {
-        connect: { id: game.creator.id },
+        create: {
+          user: {
+            connect: {
+              id: game.creator.id,
+            },
+          },
+        },
       },
     },
     include: {
-      players: true,
+      players: {
+        include: {
+          user: true,
+        },
+      },
       winner: true,
     },
   });
@@ -117,25 +147,93 @@ const createGame = async (game: GameIdleEntity): Promise<GameEntity> => {
 
 const startGame = async (
   gameId: GameId,
-  player: PlayerEntity,
+  player: PlayerDTO,
 ): Promise<GameEntity> => {
-  return dbGameToGameEntity(
-    await prisma.game.update({
-      where: { id: gameId },
-      data: {
-        players: {
-          connect: {
-            id: player.id,
-          },
+  await prisma.gamePlayer.create({
+    data: {
+      game: {
+        connect: {
+          id: gameId,
         },
-        status: "inProgress",
       },
-      include: {
-        players: true,
-        winner: true,
+      user: {
+        connect: {
+          id: player.id,
+        },
       },
-    }),
-  );
+    },
+  });
+
+  const game = await prisma.game.update({
+    where: {
+      id: gameId,
+    },
+    data: {
+      status: "inProgress",
+    },
+    include: {
+      winner: true,
+      players: {
+        include: {
+          user: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+  });
+
+  return dbGameToGameEntity(game);
 };
 
-export const gameRepository = { getGame, getGamesList, createGame, startGame };
+const saveGame = async (
+  game: GameInProgressEntity | GameOverEntity | GameOverDrawEntity,
+) => {
+  const savedGame = await prisma.game.update({
+    where: {
+      id: game.id,
+    },
+    data: {
+      status: game.status,
+      field: game.field,
+      winnerId: game.status === "gameOver" ? game.winner.id : undefined,
+    },
+    include: {
+      winner: true,
+      players: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+
+  return dbGameToGameEntity(savedGame);
+};
+
+const deleteGame = async (gameId: GameId) => {
+  const deletedGame = await prisma.game.delete({
+    where: {
+      id: gameId,
+    },
+    include: {
+      winner: true,
+      players: {
+        include: {
+          user: true,
+        },
+        orderBy: { order: "asc" },
+      },
+    },
+  });
+
+  return dbGameToGameEntity(deletedGame);
+};
+
+export const gameRepository = {
+  getGame,
+  getGamesList,
+  createGame,
+  startGame,
+  deleteGame,
+  saveGame,
+};

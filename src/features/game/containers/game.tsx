@@ -23,7 +23,7 @@ export const Game = async (props: GameProps) => {
     throw new Error("Game doen't exist");
   }
 
-  const startGameResult = await startGame(gameId, user.value);
+  const startGameResult = await startGame(gameId, { ...user.value, order: 1 });
 
   if (startGameResult.type === "right") {
     game = startGameResult;

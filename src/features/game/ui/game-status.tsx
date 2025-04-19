@@ -17,9 +17,9 @@ export const GameStatus = (props: GameStatusProps) => {
       return <div className="text-lg">Ход: {currentSymbol}</div>;
     }
     case "gameOver": {
-      const currentSymbol = getCurrentSymbol(game);
-
-      return <div className="text-lg">Победитель: {currentSymbol}</div>;
+      return (
+        <div className="text-lg">Победитель: {`${game.winner.login}`}</div>
+      );
     }
     case "gameOverDraw":
       return <div className="text-lg">Ничья</div>;
