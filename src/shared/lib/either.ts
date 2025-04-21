@@ -10,7 +10,7 @@ export type Right<R> = {
 
 export type Either<L, R> = Left<L> | Right<R>;
 
-export const left = <L>(error: L): Left<L> => ({
+export const left = <const L>(error: L): Left<L> => ({
   type: "left",
   error,
 });

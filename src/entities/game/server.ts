@@ -1,3 +1,4 @@
+export { stepGame } from "./services/step-game";
 export { surrenderGame } from "./services/surrender-game";
 export { getCurrentSymbol } from "./domain";
 export { startGame } from "./services/start-game";
